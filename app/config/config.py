@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
 
+
 class DBSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -28,7 +29,8 @@ class DBSettings(BaseSettings):
             port=self.POSTGRESQL_PORT,
             path=self.POSTGRESQL_DATABASE,
         )
-    
+
+
 class APISettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,9 +1,12 @@
 from contextlib import asynccontextmanager
-from app.config.logger_config import config_logger
+
 from fastapi import FastAPI
 
+from app.config.logger_config import config_logger
+
+
 @asynccontextmanager
-async def lifespan(app:FastAPI):
+async def lifespan(app: FastAPI):
     try:
         config_logger.info("🚀App is starting up...")
         yield

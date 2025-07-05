@@ -28,13 +28,11 @@ class Logger:
             if not os.path.exists(log_file_path):
                 with open(log_file_path, "w") as log_file:
                     log_file.write(
-                        "LEVEL  | TIME                | MODULE              | LINE | MESSAGE\n"
+                        "LEVEL  | TIME                | MODULE               | LINE | MESSAGE\n"
                     )
 
             filter_name = handler.pop("filter", None)
-            filter_func = {"config": db_filter, "func": func_filter}.get(
-                filter_name
-            )
+            filter_func = {"config": db_filter, "func": func_filter}.get(filter_name)
 
             logger.add(**handler, filter=filter_func)
 
