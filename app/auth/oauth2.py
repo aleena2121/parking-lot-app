@@ -23,8 +23,6 @@ def get_current_user(
         )
         user_id = token_data.user_id
 
-        if not user:
-            raise user_exceptions.UserNotFound(user_id)
         if not user_id:
             raise auth_exceptions.CredentialsException()
 

@@ -45,7 +45,7 @@ def upgrade() -> None:
             sa.ForeignKey("users.user_id"),
             nullable=False,
         ),
-        sa.Column("alloted_lot", sa.String(length=10), nullable=False),
+        sa.Column("alloted_lot", sa.String(length=10), nullable=True),
     )
     # ### end Alembic commands ###
 

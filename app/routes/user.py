@@ -7,28 +7,33 @@ from sqlalchemy.orm import Session
 from app.auth.oauth2 import get_current_user
 from app.config.logger_config import func_logger
 from app.db.session import get_db
+from app.enums.role_enum import RoleEnum
 from app.exceptions import auth_exceptions, db_exceptions, user_exceptions
-from app.models import user_model
+from app.models import attendant_model, user_model
 from app.queries.user_queries import get_all_users, get_user_by_email, get_user_by_id
 from app.schemas.response_schema import StandardResponse
 from app.schemas.user_schema import CreateUser, ShowUser, UpdateUser
 from app.utils.hash_password import Hash
-from app.enums.role_enum import RoleEnum 
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
+
+
+def require_admin(current_user=Depends(get_current_user)):
+    if current_user.role != RoleEnum.ADMIN:
+        func_logger.warning(
+            f"Unauthorized update attempt by user {current_user.user_id}"
+        )
+        raise auth_exceptions.UnauthorizedAccess()
+    return current_user
 
 
 @user_router.post("/", response_model=StandardResponse[ShowUser])
 def create_user(
     request: CreateUser,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_admin),
 ):
     try:
-        if current_user.role != RoleEnum.ADMIN:
-            func_logger.warning(f"Unauthorized access attempt by user {current_user.user_id}")
-            raise auth_exceptions.UnauthorizedAccess()
-
         existing_email = get_user_by_email(db, request.email)
         if existing_email:
             func_logger.warning(f"Duplicate email attempt: {request.email}")
@@ -40,6 +45,11 @@ def create_user(
         new_user = user_model.User(**user_data)
         db.add(new_user)
         db.flush()
+
+        if new_user.role == RoleEnum.ATTENDANT:
+            new_attendant = attendant_model.Attendant(user_id=new_user.user_id)
+            db.add(new_attendant)
+
         db.commit()
         func_logger.info(f"New User created, id {new_user.user_id}")
         db.refresh(new_user)
@@ -89,13 +99,9 @@ def update_user(
     user_id: str,
     request: UpdateUser,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_admin),
 ):
     try:
-        if current_user.role != RoleEnum.ADMIN:
-            func_logger.warning(f"Unauthorized update attempt by user {current_user.user_id}")
-            raise auth_exceptions.UnauthorizedAccess()
-
         user = get_user_by_id(db, user_id)
         if not user:
             func_logger.warning(f"User not found for update - ID: {user_id}")
@@ -114,7 +120,7 @@ def update_user(
 
         for key, value in updated_data.items():
             setattr(user, key, value)
-            
+
         db.commit()
         db.refresh(user)
 
@@ -134,13 +140,9 @@ def update_user(
 
 @user_router.delete("/{user_id}", response_model=StandardResponse[None])
 def delete_user(
-    user_id: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)
+    user_id: str, db: Session = Depends(get_db), current_user=Depends(require_admin)
 ):
     try:
-        if current_user.role != RoleEnum.ADMIN:
-            func_logger.warning(f"Unauthorized delete attempt by user {current_user.user_id}")
-            raise auth_exceptions.UnauthorizedAccess()
-
         user = get_user_by_id(db, user_id)
         if not user:
             func_logger.warning(f"User not found for deletion - ID: {user_id}")

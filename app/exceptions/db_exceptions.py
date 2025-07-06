@@ -1,5 +1,7 @@
 from fastapi import HTTPException, status
+
 from app.config.logger_config import func_logger
+
 
 class DatabaseIntegrityError(HTTPException):
     def __init__(self, e: str, detail: str = None):
