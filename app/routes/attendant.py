@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, status
-from app.db.session import get_db
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-from app.models.attendant_model import Attendant
+
 from app.auth.oauth2 import get_current_user
-from app.enums.role_enum import RoleEnum
 from app.config.logger_config import func_logger
+from app.db.session import get_db
+from app.enums.role_enum import RoleEnum
 from app.exceptions import auth_exceptions, db_exceptions, user_exceptions
+from app.models.attendant_model import Attendant
 from app.schemas.attendant_schema import UpdateAttendantLot
 from app.schemas.response_schema import StandardResponse
-from sqlalchemy.exc import SQLAlchemyError
 
 assign_lot_router = APIRouter(prefix="/assign-lot", tags="Assign Lot")
 

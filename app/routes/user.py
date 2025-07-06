@@ -10,7 +10,8 @@ from app.db.session import get_db
 from app.enums.role_enum import RoleEnum
 from app.exceptions import auth_exceptions, db_exceptions, user_exceptions
 from app.models import attendant_model, user_model
-from app.queries.user_queries import get_all_users, get_user_by_email, get_user_by_id
+from app.queries.user_queries import (get_all_users, get_user_by_email,
+                                      get_user_by_id)
 from app.schemas.response_schema import StandardResponse
 from app.schemas.user_schema import CreateUser, ShowUser, UpdateUser
 from app.utils.hash_password import Hash
