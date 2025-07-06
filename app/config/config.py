@@ -41,3 +41,5 @@ class APISettings(BaseSettings):
 
     HOST_IP_ADDRESS: str
     HOST_PORT_NUMBER: int
+    SECRET_KEY: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int

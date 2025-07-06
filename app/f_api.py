@@ -3,6 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.config.logger_config import config_logger
+from app.routes.auth import login_router
+from app.routes.user import user_router
 
 
 @asynccontextmanager
@@ -22,3 +24,6 @@ f_api = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+f_api.include_router(user_router)
+f_api.include_router(login_router)

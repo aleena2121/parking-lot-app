@@ -27,11 +27,4 @@ class UpdateUser(BaseModel):
 
 
 class ShowUser(UserBase):
-    id: str
-
-
-# user
-# parking lot
-# vehicle
-# ticket
-# transaction
+    user_id: str
