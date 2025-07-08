@@ -11,7 +11,7 @@ from app.models.attendant_model import Attendant
 from app.schemas.attendant_schema import UpdateAttendantLot
 from app.schemas.response_schema import StandardResponse
 
-assign_lot_router = APIRouter(prefix="/assign-lot", tags="Assign Lot")
+assign_lot_router = APIRouter(prefix="/assign-lot", tags=["Assign Lot"])
 
 
 def require_admin(current_user=Depends(get_current_user)):
