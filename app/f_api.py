@@ -3,7 +3,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.config.logger_config import config_logger
+from app.routes.attendant import assign_lot_router
 from app.routes.auth import login_router
+from app.routes.parking_lot import parking_lot_router
 from app.routes.user import user_router
 
 
@@ -25,5 +27,7 @@ f_api = FastAPI(
     lifespan=lifespan,
 )
 
-f_api.include_router(user_router)
 f_api.include_router(login_router)
+f_api.include_router(user_router)
+f_api.include_router(assign_lot_router)
+f_api.include_router(parking_lot_router)

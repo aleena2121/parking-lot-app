@@ -27,21 +27,3 @@ class Slot(Base):
         SQLAEnum(SlotEnum, name="slotenum"), nullable=False
     )
     parking_lot = relationship("ParkingLot", back_populates="slots")
-
-
-@event.listens_for(Slot, "before_insert")
-def get_commission_id(mapper, connection, target):
-    result = connection.execute(
-        text(
-            "SELECT slot_id FROM slots ORDER BY CAST(SUBSTRING(slot_id FROM 3) AS INTEGER) DESC LIMIT 1"
-        )
-    ).first()
-
-    if result is None:
-        next_num = 1
-    else:
-        last_id = result[0]
-        last_num = int(last_id.replace("SL", ""))
-        next_num = last_num + 1
-
-    target.slot_id = f"SL{next_num}"
