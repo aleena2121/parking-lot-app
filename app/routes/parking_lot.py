@@ -11,11 +11,16 @@ from app.enums.role_enum import RoleEnum
 from app.exceptions import auth_exceptions, db_exceptions
 from app.models.parking_lot_model import ParkingLot
 from app.queries.parking_lot_queries import get_all_lots, get_lot_by_id
-from app.schemas.parking_lot_schema import (ParkingLotBase, ShowParkingLot,
-                                            UpdateParkingLot)
+from app.schemas.parking_lot_schema import (
+    ParkingLotBase,
+    ShowParkingLot,
+    UpdateParkingLot,
+)
 from app.schemas.response_schema import StandardResponse
-from app.services.parking_lot_services import (create_slots_and_row,
-                                               update_slots_and_capacity)
+from app.services.parking_lot_services import (
+    create_slots_and_row,
+    update_slots_and_capacity,
+)
 
 parking_lot_router = APIRouter(prefix="/parking-lot", tags=["Parking Lot"])
 
