@@ -22,7 +22,7 @@ class User(Base):
 
 
 @event.listens_for(User, "before_insert")
-def get_commission_id(mapper, connection, target):
+def get_user_id(mapper, connection, target):
     result = connection.execute(
         text(
             "SELECT user_id FROM users ORDER BY CAST(SUBSTRING(user_id FROM 5) AS INTEGER) DESC LIMIT 1"

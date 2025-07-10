@@ -26,16 +26,21 @@ def upgrade() -> None:
 
     op.create_table(
         "users",
-        sa.Column("user_id", sa.String(length=20), nullable=False),
+        sa.Column(
+            "user_id",
+            sa.String(length=20),
+            nullable=False,
+            primary_key=True,
+            index=True,
+        ),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("email", sa.String(length=100), nullable=False),
         sa.Column("password", sa.String(length=100), nullable=False),
         sa.Column("role", role_enum, nullable=False),
         sa.Column("created_at", sa.DateTime, nullable=False),
-        sa.PrimaryKeyConstraint("user_id"),
         sa.UniqueConstraint("email"),
-        sa.UniqueConstraint("user_id"),
     )
+    op.create_index("ix_user_id", "users", ["user_id"])
 
     op.create_table(
         "attendants",
@@ -44,6 +49,8 @@ def upgrade() -> None:
             sa.String(length=20),
             sa.ForeignKey("users.user_id"),
             nullable=False,
+            primary_key=True,
+            ondelete="CASCADE",
         ),
         sa.Column("alloted_lot", sa.String(length=10), nullable=True),
     )

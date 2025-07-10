@@ -20,7 +20,7 @@ class ParkingLot(Base):
 
 
 @event.listens_for(ParkingLot, "before_insert")
-def get_commission_id(mapper, connection, target):
+def get_lot_id(mapper, connection, target):
     result = connection.execute(
         text(
             "SELECT parking_lot_id FROM parkinglots ORDER BY CAST(SUBSTRING(parking_lot_id FROM 3) AS INTEGER) DESC LIMIT 1"

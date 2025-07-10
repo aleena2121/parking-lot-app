@@ -10,17 +10,9 @@ from app.exceptions import auth_exceptions, db_exceptions, user_exceptions
 from app.models.attendant_model import Attendant
 from app.schemas.attendant_schema import UpdateAttendantLot
 from app.schemas.response_schema import StandardResponse
+from app.utils.role_checker import require_admin
 
 assign_lot_router = APIRouter(prefix="/assign-lot", tags=["Assign Lot"])
-
-
-def require_admin(current_user=Depends(get_current_user)):
-    if current_user.role != RoleEnum.ADMIN:
-        func_logger.warning(
-            f"Unauthorized update attempt by user {current_user.user_id}"
-        )
-        raise auth_exceptions.UnauthorizedAccess()
-    return current_user
 
 
 @assign_lot_router.put("/{user_id}")

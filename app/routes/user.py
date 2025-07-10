@@ -10,21 +10,14 @@ from app.db.session import get_db
 from app.enums.role_enum import RoleEnum
 from app.exceptions import auth_exceptions, db_exceptions, user_exceptions
 from app.models import attendant_model, user_model
-from app.queries.user_queries import get_all_users, get_user_by_email, get_user_by_id
+from app.queries.user_queries import (get_all_users, get_user_by_email,
+                                      get_user_by_id)
 from app.schemas.response_schema import StandardResponse
 from app.schemas.user_schema import CreateUser, ShowUser, UpdateUser
 from app.utils.hash_password import Hash
+from app.utils.role_checker import require_admin
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
-
-
-def require_admin(current_user=Depends(get_current_user)):
-    if current_user.role != RoleEnum.ADMIN:
-        func_logger.warning(
-            f"Unauthorized update attempt by user {current_user.user_id}"
-        )
-        raise auth_exceptions.UnauthorizedAccess()
-    return current_user
 
 
 @user_router.post("/", response_model=StandardResponse[ShowUser])

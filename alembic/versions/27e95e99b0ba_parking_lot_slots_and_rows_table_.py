@@ -21,7 +21,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    slot_enum = postgresql.ENUM("Regular", "Large", "Handicapped", name="slotenum")
+    slot_enum = sa.Enum("Regular", "Large", "Handicapped", name="slotenum")
 
     op.create_table(
         "parkinglots",
@@ -40,8 +40,14 @@ def upgrade() -> None:
         "rows",
         sa.Column("parking_lot_id", sa.String(length=20), nullable=False),
         sa.Column("row_label", sa.String(length=20), nullable=False),
-        sa.PrimaryKeyConstraint("parking_lot_id", "row_label", name="pk_lot_row"),
-        sa.ForeignKeyConstraint(["parking_lot_id"], ["parkinglots.parking_lot_id"]),
+        sa.PrimaryKeyConstraint(
+            "parking_lot_id",
+            "row_label",
+            name="pk_lot_row",
+        ),
+        sa.ForeignKeyConstraint(
+            ["parking_lot_id"], ["parkinglots.parking_lot_id"], ondelete="CASCADE"
+        ),
     )
 
     op.create_table(
@@ -58,9 +64,13 @@ def upgrade() -> None:
             sa.Enum("Regular", "Large", "Handicapped", name="slotenum"),
             nullable=False,
         ),
-        sa.ForeignKeyConstraint(["parking_lot_id"], ["parkinglots.parking_lot_id"]),
         sa.ForeignKeyConstraint(
-            ["parking_lot_id", "row_label"], ["rows.parking_lot_id", "rows.row_label"]
+            ["parking_lot_id"], ["parkinglots.parking_lot_id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["parking_lot_id", "row_label"],
+            ["rows.parking_lot_id", "rows.row_label"],
+            ondelete="CASCADE",
         ),
     )
 
