@@ -22,16 +22,14 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # vehicle_enum = sa.Enum(*[e.name for e in VehicleEnum], name="vehicleenum")
-    # driver_enum = sa.Enum(*[e.name for e in DriverEnum], name="driverenum")
-
     op.create_table(
         "vehicles",
         sa.Column("vehicle_id", sa.String(), primary_key=True),
         sa.Column("plate_number", sa.String(), nullable=False),
-        sa.Column("make", sa.String(), nullable=True),
-        sa.Column("model", sa.String(), nullable=True),
-        sa.Column("color", sa.String(), nullable=True),
+        sa.Column("make", sa.String(), nullable=False),
+        sa.Column("model", sa.String(), nullable=False),
+        sa.Column("color", sa.String(), nullable=False),
+        sa.Column("driver_phone_no", sa.String(), nullable=False),
         sa.Column(
             "vehicle_category", sa.Enum(VehicleEnum, name="vehicleenum"), nullable=False
         ),
@@ -47,18 +45,28 @@ def upgrade() -> None:
         sa.Column(
             "vehicle_id",
             sa.String(),
-            sa.ForeignKey("vehicles.vehicle_id"),
+            sa.ForeignKey("vehicles.vehicle_id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "parking_lot_id",
+            sa.String(),
+            sa.ForeignKey("parkinglots.parking_lot_id"),
             nullable=False,
         ),
         sa.Column(
             "slot_id", sa.String(), sa.ForeignKey("slots.slot_id"), nullable=False
         ),
-        sa.Column("attendant_id", sa.String(), sa.ForeignKey("attendants.user_id")),
-        sa.Column("driver_phone_no", sa.String(), nullable=False),
+        sa.Column(
+            "attendant_id",
+            sa.String(),
+            sa.ForeignKey("attendants.user_id"),
+            nullable=False,
+        ),
         sa.Column("entry_time", sa.DateTime(), nullable=False),
         sa.Column("exit_time", sa.DateTime(), nullable=True),
         sa.Column(
-            "is_active", sa.Boolean(), nullable=False, server_default=sa.text("false")
+            "is_active", sa.Boolean(), nullable=False, server_default=sa.text("true")
         ),
     )
     op.create_index("ix_tickets_ticket_id", "tickets", ["ticket_id"])

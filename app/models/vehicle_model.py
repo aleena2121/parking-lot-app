@@ -6,15 +6,21 @@ from app.db.base import Base
 from app.enums.driver_enum import DriverEnum
 from app.enums.vehicle_enum import VehicleEnum
 
+# from typing import TYPE_CHECKING
+
+# if TYPE_CHECKING:
+#     from app.models.ticket_model import Ticket
+
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
 
     vehicle_id: Mapped[str] = mapped_column(primary_key=True, index=True)
     plate_number: Mapped[str] = mapped_column(String, nullable=False)
-    make: Mapped[str] = mapped_column(String, nullable=True)
-    model: Mapped[str] = mapped_column(String, nullable=True)
-    color: Mapped[str] = mapped_column(String, nullable=True)
+    make: Mapped[str] = mapped_column(String, nullable=False)
+    model: Mapped[str] = mapped_column(String, nullable=False)
+    color: Mapped[str] = mapped_column(String, nullable=False)
+    driver_phone_no: Mapped[str] = mapped_column(String, nullable=False)
     vehicle_category: Mapped[VehicleEnum] = mapped_column(
         SQLAEnum(VehicleEnum, name="vehicleenum"), nullable=False
     )

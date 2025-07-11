@@ -27,3 +27,4 @@ class Slot(Base):
         SQLAEnum(SlotEnum, name="slotenum"), nullable=False
     )
     parking_lot = relationship("ParkingLot", back_populates="slots")
+    tickets = relationship("Ticket", back_populates="slot")

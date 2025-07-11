@@ -14,22 +14,22 @@ class TicketBase(BaseModel):
     color: str
     vehicle_category: VehicleEnum
     driver_category: DriverEnum
-    slot_id: str
-    attendant_id: str
     driver_phone_no: str
-    entry_time: datetime
-    exit_time: Optional[datetime] = None
-    is_active: bool = True
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ShowSlot(BaseModel):
+    slot_name: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class ShowTicket(BaseModel):
     ticket_id: str
-    vehicle_category: VehicleEnum
-    slot_name: str
-    attendant_id: int
-    entry_time: Optional[datetime] = None
+    parking_lot_id: str
+    slot: ShowSlot
+    slot_id: str
+    attendant_id: str
+    entry_time: datetime
     exit_time: Optional[datetime] = None
-
-    model_config = ConfigDict(from_attributes=True)

@@ -13,6 +13,7 @@ class VehicleBase(BaseModel):
     color: str
     vehicle_category: VehicleEnum
     driver_category: DriverEnum
+    driver_phone_no: str
 
     model_config = ConfigDict(from_attributes=True)
 

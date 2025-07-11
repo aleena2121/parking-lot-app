@@ -1,6 +1,8 @@
 import os
 import sys
 
+import app.models
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logging.config import fileConfig
 
