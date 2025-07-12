@@ -9,6 +9,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.slot_model import Slot
+    from app.models.transaction_model import TransactionModel
     from app.models.vehicle_model import Vehicle
 
 
@@ -34,6 +35,10 @@ class Ticket(Base):
 
     vehicle = relationship("Vehicle", back_populates="tickets")
     slot = relationship("Slot", back_populates="tickets")
+
+    transaction = relationship(
+        "TransactionModel", back_populates="ticket", uselist=False
+    )
 
 
 @event.listens_for(Ticket, "before_insert")
