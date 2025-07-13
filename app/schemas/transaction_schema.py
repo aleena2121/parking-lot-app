@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -14,4 +14,4 @@ class TransactionBase(BaseModel):
 
 class ShowTransaction(TransactionBase):
     transaction_id: str
-    payment_timestamp: datetime
+    payment_timestamp: Optional[datetime]

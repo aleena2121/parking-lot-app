@@ -13,12 +13,24 @@ from app.models.parking_lot_model import ParkingLot
 from app.queries.parking_lot_queries import get_all_lots, get_lot_by_id
 from app.schemas.parking_lot_schema import (ParkingLotBase, ShowParkingLot,
                                             UpdateParkingLot)
+from app.schemas.vehicle_schema import Category
 from app.schemas.response_schema import StandardResponse
-from app.services.parking_lot_services import (create_slots_and_row,
+from app.schemas.ticket_schema import TicketBase
+from app.services.parking_lot_services import (create_slots_and_row, guide_driver_to_parking_lot,
                                                update_slots_and_capacity)
 from app.utils.role_checker import require_admin
 
 parking_lot_router = APIRouter(prefix="/parking-lot", tags=["Parking Lot"])
+
+
+@parking_lot_router.post("/guide", response_model=StandardResponse[dict])
+def guide_driver(request: Category, db: Session = Depends(get_db)):
+    result = guide_driver_to_parking_lot(request=request, db=db)
+    return StandardResponse(
+        message="Parking lot assigned successfully",
+        payload=result,
+        status_code=status.HTTP_200_OK
+    )
 
 
 @parking_lot_router.post("/", response_model=StandardResponse[ShowParkingLot])

@@ -14,9 +14,7 @@ class TransactionModel(Base):
     ticket_id: Mapped[str] = mapped_column(
         ForeignKey("tickets.ticket_id"), nullable=False
     )
-    payment_timestamp: Mapped[datetime] = mapped_column(
-        TIMESTAMP, default=datetime.utcnow, nullable=False
-    )
+    payment_timestamp: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True)
     amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     payment_status: Mapped[str] = mapped_column(String(50), nullable=False)
 

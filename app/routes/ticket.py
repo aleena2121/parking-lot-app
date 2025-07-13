@@ -12,13 +12,17 @@ from app.db.session import get_db
 from app.exceptions import db_exceptions
 from app.models.attendant_model import Attendant
 from app.models.ticket_model import Ticket
+from app.queries.parking_lot_queries import (get_lot_by_id, get_slot_by_id,
+                                             get_slot_name)
 from app.queries.ticket_queries import (get_all_tickets, get_ticket_by_id,
                                         get_ticket_by_lot_id,
                                         get_ticket_by_lot_id_and_slot_name)
 from app.schemas.response_schema import StandardResponse
 from app.schemas.ticket_schema import ShowTicket, TicketBase
+from app.schemas.transaction_schema import ShowTransaction
 from app.schemas.vehicle_schema import VehicleBase
 from app.services.ticket_services import add_or_update_vehicle, get_slot
+from app.services.transaction_service import create_transaction
 from app.utils.role_checker import require_attendant
 
 ticket_router = APIRouter(prefix="/ticket", tags=["Ticket"])
@@ -63,9 +67,8 @@ def create_ticket(
         slot.is_occupied = True
         parking_lot = slot.parking_lot
 
-        if parking_lot and slot.slot_name in parking_lot.available_slots:
-            parking_lot.available_slots.remove(slot.slot_name)
-            flag_modified(parking_lot, "available_slots")
+        parking_lot.available_slots.remove(slot.slot_name)
+        flag_modified(parking_lot, "available_slots")
 
         db.add(new_ticket)
         db.commit()
@@ -140,3 +143,40 @@ def get_by_lot_id(
         payload=tickets,
         status_code=status.HTTP_200_OK,
     )
+
+
+@ticket_router.put(
+    "/exit/{ticket_id}", response_model=StandardResponse[ShowTransaction]
+)
+def exit_vehicle(
+    ticket_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        ticket = get_ticket_by_id(ticket_id=ticket_id, db=db)
+        ticket.exit_time = datetime.now()
+        ticket.is_active = False
+
+        slot = get_slot_by_id(db=db, slot_id=ticket.slot_id)
+        slot.is_occupied = False
+
+        parking_lot = get_lot_by_id(db=db, lot_id=ticket.parking_lot_id)
+        slot_name = get_slot_name(db=db, slot_id=ticket.slot_id).slot_name
+        parking_lot.available_slots.append(slot_name)
+        flag_modified(parking_lot, "available_slots")
+
+        transaction = create_transaction(db=db, ticket=ticket)
+        db.commit()
+        db.refresh(transaction)
+        db.refresh(ticket)
+
+        return StandardResponse(
+            message=f"Vehicle exited",
+            payload=transaction,
+            status_code=status.HTTP_200_OK,
+        )
+    except SQLAlchemyError as e:
+        db.rollback()
+        func_logger.error(f"{e}")
+        raise db_exceptions.DatabaseIntegrityError(e)

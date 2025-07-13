@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -20,3 +20,8 @@ class VehicleBase(BaseModel):
 
 class ShowVehicle(VehicleBase):
     vehicle_id: str
+
+
+class Category(BaseModel):
+    driver_category: VehicleEnum
+    vehicle_category: DriverEnum

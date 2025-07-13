@@ -7,6 +7,7 @@ from app.routes.attendant import assign_lot_router
 from app.routes.auth import login_router
 from app.routes.parking_lot import parking_lot_router
 from app.routes.ticket import ticket_router
+from app.routes.transaction import transaction_router
 from app.routes.user import user_router
 from app.routes.vehicle import vehicle_router
 
@@ -35,3 +36,4 @@ f_api.include_router(assign_lot_router)
 f_api.include_router(parking_lot_router)
 f_api.include_router(vehicle_router)
 f_api.include_router(ticket_router)
+f_api.include_router(transaction_router)

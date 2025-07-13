@@ -30,8 +30,7 @@ def upgrade() -> None:
         sa.Column(
             "payment_timestamp",
             sa.TIMESTAMP,
-            nullable=False,
-            server_default=sa.func.now(),
+            nullable=True,
         ),
         sa.Column("amount", sa.Numeric(10, 2), nullable=False),
         sa.Column("payment_status", sa.String(length=50), nullable=False),

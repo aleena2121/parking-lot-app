@@ -1,17 +1,21 @@
 import json
 import math
+import re
 
-from fastapi import HTTPException, status
+from fastapi import status
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.config.logger_config import func_logger
 from app.enums.slot_enum import SlotEnum
+from app.exceptions.parking_lot_exceptions import NoLotFoundException, SlotsOccupiedException
 from app.models.parking_lot_model import ParkingLot
 from app.models.row_model import Row
 from app.models.slot_model import Slot
 from app.schemas.response_schema import StandardResponse
+from app.schemas.ticket_schema import TicketBase
+from app.schemas.vehicle_schema import Category
 
 
 def get_row_label(index: int) -> str:
@@ -106,10 +110,7 @@ def update_slots_and_capacity(new_capacity: int, db: Session, parking_lot: Parki
         )
 
         if any(slot.is_occupied for slot in removable_slots):
-            raise HTTPException(
-                detail="Cannot reduce capacity, slots are occupied.",
-                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-            )
+            raise SlotsOccupiedException()
 
         for slot in removable_slots:
             db.delete(slot)
@@ -240,3 +241,61 @@ def update_slots_and_capacity(new_capacity: int, db: Session, parking_lot: Parki
         )
         db.commit()
         db.refresh(parking_lot)
+
+
+def extract_lot_number(lot_id: str):
+    match = re.search(r'\d+', lot_id)
+    return int(match.group()) 
+
+
+def guide_driver_to_parking_lot(request: Category, db: Session):
+    driver_type = request.driver_category
+    vehicle_type = request.vehicle_category
+
+    if vehicle_type == "Large":
+        category = "Large"
+    elif driver_type == "Handicapped":
+        category = "Handicapped"
+    else:
+        category = "Regular"
+
+    lots = db.query(ParkingLot).all()
+    selected_lot = None
+
+    if category == "Handicapped":
+        for lot in sorted(lots, key=lambda x: extract_lot_number(x.parking_lot_id)):
+            has_slot = db.query(Slot).filter(
+                Slot.parking_lot_id == lot.parking_lot_id,
+                Slot.slot_category == "Handicapped",
+                Slot.is_occupied == False
+            ).first()
+            if has_slot:
+                selected_lot = lot
+                break
+    else:
+        available_lots = []
+        for lot in lots:
+            used = db.query(Slot).filter(
+                Slot.parking_lot_id == lot.parking_lot_id,
+                Slot.slot_category == category,
+                Slot.is_occupied == True
+            ).count()
+            free = db.query(Slot).filter(
+                Slot.parking_lot_id == lot.parking_lot_id,
+                Slot.slot_category == category,
+                Slot.is_occupied == False
+            ).count()
+
+            if free > 0:
+                available_lots.append((used, extract_lot_number(lot.parking_lot_id), lot))
+
+        if available_lots:
+            available_lots.sort(key=lambda x: (x[0], x[1]))
+            _, _, selected_lot = available_lots[0]
+
+    if not selected_lot:
+        raise NoLotFoundException()
+
+    return {
+        "parking_lot_id": selected_lot.parking_lot_id
+    }
