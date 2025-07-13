@@ -20,3 +20,10 @@ class VehicleBase(BaseModel):
 
 class ShowVehicle(VehicleBase):
     vehicle_id: str
+
+
+class SearchVehicle(BaseModel):
+    lot_id: str
+    color: Optional[str]
+    make: Optional[str]
+    model: Optional[str]
