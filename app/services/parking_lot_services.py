@@ -9,7 +9,8 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from app.config.logger_config import func_logger
 from app.enums.slot_enum import SlotEnum
-from app.exceptions.parking_lot_exceptions import NoLotFoundException, SlotsOccupiedException
+from app.exceptions.parking_lot_exceptions import (NoLotFoundException,
+                                                   SlotsOccupiedException)
 from app.models.parking_lot_model import ParkingLot
 from app.models.row_model import Row
 from app.models.slot_model import Slot
@@ -244,8 +245,8 @@ def update_slots_and_capacity(new_capacity: int, db: Session, parking_lot: Parki
 
 
 def extract_lot_number(lot_id: str):
-    match = re.search(r'\d+', lot_id)
-    return int(match.group()) 
+    match = re.search(r"\d+", lot_id)
+    return int(match.group())
 
 
 def guide_driver_to_parking_lot(request: Category, db: Session):
@@ -264,30 +265,44 @@ def guide_driver_to_parking_lot(request: Category, db: Session):
 
     if category == "Handicapped":
         for lot in sorted(lots, key=lambda x: extract_lot_number(x.parking_lot_id)):
-            has_slot = db.query(Slot).filter(
-                Slot.parking_lot_id == lot.parking_lot_id,
-                Slot.slot_category == "Handicapped",
-                Slot.is_occupied == False
-            ).first()
+            has_slot = (
+                db.query(Slot)
+                .filter(
+                    Slot.parking_lot_id == lot.parking_lot_id,
+                    Slot.slot_category == "Handicapped",
+                    Slot.is_occupied == False,
+                )
+                .first()
+            )
             if has_slot:
                 selected_lot = lot
                 break
     else:
         available_lots = []
         for lot in lots:
-            used = db.query(Slot).filter(
-                Slot.parking_lot_id == lot.parking_lot_id,
-                Slot.slot_category == category,
-                Slot.is_occupied == True
-            ).count()
-            free = db.query(Slot).filter(
-                Slot.parking_lot_id == lot.parking_lot_id,
-                Slot.slot_category == category,
-                Slot.is_occupied == False
-            ).count()
+            used = (
+                db.query(Slot)
+                .filter(
+                    Slot.parking_lot_id == lot.parking_lot_id,
+                    Slot.slot_category == category,
+                    Slot.is_occupied == True,
+                )
+                .count()
+            )
+            free = (
+                db.query(Slot)
+                .filter(
+                    Slot.parking_lot_id == lot.parking_lot_id,
+                    Slot.slot_category == category,
+                    Slot.is_occupied == False,
+                )
+                .count()
+            )
 
             if free > 0:
-                available_lots.append((used, extract_lot_number(lot.parking_lot_id), lot))
+                available_lots.append(
+                    (used, extract_lot_number(lot.parking_lot_id), lot)
+                )
 
         if available_lots:
             available_lots.sort(key=lambda x: (x[0], x[1]))
@@ -296,6 +311,4 @@ def guide_driver_to_parking_lot(request: Category, db: Session):
     if not selected_lot:
         raise NoLotFoundException()
 
-    return {
-        "parking_lot_id": selected_lot.parking_lot_id
-    }
+    return {"parking_lot_id": selected_lot.parking_lot_id}

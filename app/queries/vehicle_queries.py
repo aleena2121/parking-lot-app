@@ -18,7 +18,8 @@ def get_all_vehicles(db: Session):
 
 
 def get_active_vehicles_in_lot(db: Session, lot_id: str):
-    return db.query(Vehicle).join(Ticket).filter(
-        Ticket.parking_lot_id == lot_id,
-        Ticket.is_active == True
+    return (
+        db.query(Vehicle)
+        .join(Ticket)
+        .filter(Ticket.parking_lot_id == lot_id, Ticket.is_active == True)
     )

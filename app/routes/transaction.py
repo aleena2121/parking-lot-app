@@ -9,7 +9,10 @@ from app.auth.oauth2 import get_current_user
 from app.config.logger_config import func_logger
 from app.db.session import get_db
 from app.exceptions import db_exceptions
-from app.queries.transaction_queries import get_transaction_by_ticket, get_all_transactions, get_transaction_by_id, get_transaction_by_ticket_id
+from app.queries.transaction_queries import (get_all_transactions,
+                                             get_transaction_by_id,
+                                             get_transaction_by_ticket,
+                                             get_transaction_by_ticket_id)
 from app.schemas.response_schema import StandardResponse
 from app.schemas.transaction_schema import ShowTransaction
 from app.utils.role_checker import require_attendant
@@ -46,14 +49,14 @@ def make_payment(
 
 
 @transaction_router.get("/", response_model=StandardResponse[List[ShowTransaction]])
-def get_all(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_all(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     try:
         transactions = get_all_transactions(db=db)
 
         return StandardResponse(
             message=f"Found {len(transactions)} transactions",
             payload=transactions,
-            status_code=status.HTTP_200_OK
+            status_code=status.HTTP_200_OK,
         )
     except SQLAlchemyError as e:
         db.rollback()
@@ -61,38 +64,47 @@ def get_all(db: Session = Depends(get_db), current_user = Depends(get_current_us
         raise db_exceptions.DatabaseIntegrityError(e)
 
 
-@transaction_router.get("/{transaction_id}", response_model=StandardResponse[ShowTransaction])
-def get_by_id(transaction_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+@transaction_router.get(
+    "/{transaction_id}", response_model=StandardResponse[ShowTransaction]
+)
+def get_by_id(
+    transaction_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     try:
         transaction = get_transaction_by_id(transaction_id=transaction_id, db=db)
 
         return StandardResponse(
             message=f"Found transaction",
             payload=transaction,
-            status_code=status.HTTP_200_OK
+            status_code=status.HTTP_200_OK,
         )
-    
+
     except SQLAlchemyError as e:
         db.rollback()
         func_logger.error(f"{e}")
         raise db_exceptions.DatabaseIntegrityError(e)
-    
 
 
-@transaction_router.get("/ticket/{ticket_id}", response_model=StandardResponse[ShowTransaction])
-def get_by_ticket_id(ticket_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+@transaction_router.get(
+    "/ticket/{ticket_id}", response_model=StandardResponse[ShowTransaction]
+)
+def get_by_ticket_id(
+    ticket_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     try:
         transaction = get_transaction_by_ticket_id(ticket_id=ticket_id, db=db)
 
         return StandardResponse(
             message=f"Found transaction",
             payload=transaction,
-            status_code=status.HTTP_200_OK
+            status_code=status.HTTP_200_OK,
         )
-    
+
     except SQLAlchemyError as e:
         db.rollback()
         func_logger.error(f"{e}")
         raise db_exceptions.DatabaseIntegrityError(e)
-
-

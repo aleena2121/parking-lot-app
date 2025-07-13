@@ -25,7 +25,8 @@ class ShowVehicle(VehicleBase):
 class Category(BaseModel):
     driver_category: VehicleEnum
     vehicle_category: DriverEnum
-    
+
+
 class SearchVehicle(BaseModel):
     lot_id: str
     color: Optional[str]

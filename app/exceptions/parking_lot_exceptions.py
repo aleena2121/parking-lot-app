@@ -8,12 +8,14 @@ class ParkingLotFullException(HTTPException):
             detail=f"Parking Lot full, check other lots",
         )
 
+
 class NoLotFoundException(HTTPException):
     def __init__(self, email: str):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No empty lot found",
         )
+
 
 class SlotsOccupiedException(HTTPException):
     def __init__(self, email: str):

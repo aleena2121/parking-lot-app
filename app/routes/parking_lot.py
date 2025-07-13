@@ -13,10 +13,11 @@ from app.models.parking_lot_model import ParkingLot
 from app.queries.parking_lot_queries import get_all_lots, get_lot_by_id
 from app.schemas.parking_lot_schema import (ParkingLotBase, ShowParkingLot,
                                             UpdateParkingLot)
-from app.schemas.vehicle_schema import Category
 from app.schemas.response_schema import StandardResponse
 from app.schemas.ticket_schema import TicketBase
-from app.services.parking_lot_services import (create_slots_and_row, guide_driver_to_parking_lot,
+from app.schemas.vehicle_schema import Category
+from app.services.parking_lot_services import (create_slots_and_row,
+                                               guide_driver_to_parking_lot,
                                                update_slots_and_capacity)
 from app.utils.role_checker import require_admin
 
@@ -29,7 +30,7 @@ def guide_driver(request: Category, db: Session = Depends(get_db)):
     return StandardResponse(
         message="Parking lot assigned successfully",
         payload=result,
-        status_code=status.HTTP_200_OK
+        status_code=status.HTTP_200_OK,
     )
 
 
@@ -70,18 +71,19 @@ def get_all_parking_lots(
         message=f"{len(lots)} lots found", payload=lots, status_code=status.HTTP_200_OK
     )
 
+
 @parking_lot_router.get("/is-full/{lot_id}", response_model=StandardResponse[str])
 def is_parking_lot_full(
-    lot_id: str,
-    db: Session = Depends(get_db), current_user=Depends(get_current_user)
+    lot_id: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)
 ):
     lot = get_lot_by_id(lot_id=lot_id, db=db)
-    lot_status= "Full" if len(lot.available_slots) == 0 else "Not Full"
+    lot_status = "Full" if len(lot.available_slots) == 0 else "Not Full"
     return StandardResponse(
-        message=f"Lot status fetched", 
-        payload=lot_status, 
-        status_code=status.HTTP_200_OK
+        message=f"Lot status fetched",
+        payload=lot_status,
+        status_code=status.HTTP_200_OK,
     )
+
 
 @parking_lot_router.get("/{lot_id}", response_model=StandardResponse[ShowParkingLot])
 def get_parking_lot_by_id(
