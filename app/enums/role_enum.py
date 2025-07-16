@@ -4,5 +4,5 @@ from enum import Enum
 class RoleEnum(str, Enum):
     ADMIN = "Admin"
     SECURITY = "Security"
-    CUSTOMER = "Customer"
+    POLICE = "Police"
     ATTENDANT = "Attendant"

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.config.logger_config import func_logger
@@ -5,12 +7,22 @@ from app.models.slot_model import Slot
 from app.models.ticket_model import Ticket
 
 
-def get_ticket_by_id(db: Session, ticket_id: str):
-    return db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
+def get_ticket_by_id(db: Session, ticket_id: str, lot_id: Optional[str] = None):
+    if not lot_id:
+        return db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
+    else:
+        return (
+            db.query(Ticket)
+            .filter(Ticket.ticket_id == ticket_id, Ticket.parking_lot_id == lot_id)
+            .first()
+        )
 
 
-def get_all_tickets(db: Session):
-    return db.query(Ticket).all()
+def get_all_tickets(db: Session, lot_id: Optional[str] = None):
+    if not lot_id:
+        return db.query(Ticket).all()
+    else:
+        return db.query(Ticket).filter(Ticket.parking_lot_id == lot_id).all()
 
 
 def get_ticket_by_lot_id(db: Session, lot_id: str):

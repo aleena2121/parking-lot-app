@@ -4,29 +4,34 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.auth.oauth2 import get_current_user
 from app.config.logger_config import func_logger
 from app.db.session import get_db
+from app.enums.driver_enum import DriverEnum
 from app.enums.role_enum import RoleEnum
-from app.exceptions import auth_exceptions, db_exceptions
+from app.enums.vehicle_enum import VehicleEnum
+from app.exceptions import db_exceptions
 from app.models.parking_lot_model import ParkingLot
 from app.queries.parking_lot_queries import get_all_lots, get_lot_by_id
 from app.schemas.parking_lot_schema import (ParkingLotBase, ShowParkingLot,
                                             UpdateParkingLot)
 from app.schemas.response_schema import StandardResponse
-from app.schemas.ticket_schema import TicketBase
-from app.schemas.vehicle_schema import Category
 from app.services.parking_lot_services import (create_slots_and_row,
                                                guide_driver_to_parking_lot,
                                                update_slots_and_capacity)
-from app.utils.role_checker import require_admin
+from app.utils.role_checker import require_role
 
 parking_lot_router = APIRouter(prefix="/parking-lot", tags=["Parking Lot"])
 
 
-@parking_lot_router.post("/guide", response_model=StandardResponse[dict])
-def guide_driver(request: Category, db: Session = Depends(get_db)):
-    result = guide_driver_to_parking_lot(request=request, db=db)
+@parking_lot_router.get("/guide", response_model=StandardResponse[dict])
+def guide_driver(
+    vehicle_category: VehicleEnum,
+    driver_category: DriverEnum,
+    db: Session = Depends(get_db),
+):
+    result = guide_driver_to_parking_lot(
+        vehicle_category=vehicle_category, driver_category=driver_category, db=db
+    )
     return StandardResponse(
         message="Parking lot assigned successfully",
         payload=result,
@@ -38,7 +43,7 @@ def guide_driver(request: Category, db: Session = Depends(get_db)):
 def create_parking_lot(
     request: ParkingLotBase,
     db: Session = Depends(get_db),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     try:
         parking_lot = ParkingLot(**request.model_dump(exclude_unset=True))
@@ -63,7 +68,7 @@ def create_parking_lot(
 
 @parking_lot_router.get("/", response_model=StandardResponse[List[ShowParkingLot]])
 def get_all_parking_lots(
-    db: Session = Depends(get_db), current_user=Depends(require_admin)
+    db: Session = Depends(get_db), current_user=Depends(require_role(RoleEnum.ADMIN))
 ):
     lots = get_all_lots(db)
     func_logger.info(f"Returned {len(lots)} lots")
@@ -74,7 +79,9 @@ def get_all_parking_lots(
 
 @parking_lot_router.get("/is-full/{lot_id}", response_model=StandardResponse[str])
 def is_parking_lot_full(
-    lot_id: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)
+    lot_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     lot = get_lot_by_id(lot_id=lot_id, db=db)
     lot_status = "Full" if len(lot.available_slots) == 0 else "Not Full"
@@ -87,7 +94,9 @@ def is_parking_lot_full(
 
 @parking_lot_router.get("/{lot_id}", response_model=StandardResponse[ShowParkingLot])
 def get_parking_lot_by_id(
-    lot_id: str, db: Session = Depends(get_db), current_user=Depends(require_admin)
+    lot_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     lot = get_lot_by_id(db, lot_id)
     func_logger.info(f"Returned Parking lot, ID: {lot_id}")
@@ -101,7 +110,7 @@ def update_parking_lot(
     lot_id: str,
     request: UpdateParkingLot,
     db: Session = Depends(get_db),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     lot = get_lot_by_id(db, lot_id)
     new_capacity = request.capacity
@@ -121,7 +130,9 @@ def update_parking_lot(
 
 @parking_lot_router.delete("/{lot_id}", response_model=StandardResponse[str])
 def delete_parking_lot(
-    lot_id: str, db: Session = Depends(get_db), current_user=Depends(require_admin)
+    lot_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     try:
         lot = get_lot_by_id(db, lot_id)

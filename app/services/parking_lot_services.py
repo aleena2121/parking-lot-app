@@ -1,22 +1,19 @@
-import json
 import math
 import re
 
-from fastapi import status
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.config.logger_config import func_logger
+from app.enums.driver_enum import DriverEnum
 from app.enums.slot_enum import SlotEnum
+from app.enums.vehicle_enum import VehicleEnum
 from app.exceptions.parking_lot_exceptions import (NoLotFoundException,
                                                    SlotsOccupiedException)
 from app.models.parking_lot_model import ParkingLot
 from app.models.row_model import Row
 from app.models.slot_model import Slot
-from app.schemas.response_schema import StandardResponse
-from app.schemas.ticket_schema import TicketBase
-from app.schemas.vehicle_schema import Category
 
 
 def get_row_label(index: int) -> str:
@@ -249,13 +246,12 @@ def extract_lot_number(lot_id: str):
     return int(match.group())
 
 
-def guide_driver_to_parking_lot(request: Category, db: Session):
-    driver_type = request.driver_category
-    vehicle_type = request.vehicle_category
-
-    if vehicle_type == "Large":
+def guide_driver_to_parking_lot(
+    vehicle_category: VehicleEnum, driver_category: DriverEnum, db: Session
+):
+    if vehicle_category == "Large":
         category = "Large"
-    elif driver_type == "Handicapped":
+    elif driver_category == "Handicapped":
         category = "Handicapped"
     else:
         category = "Regular"

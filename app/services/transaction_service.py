@@ -1,10 +1,7 @@
-from datetime import datetime
-
 from sqlalchemy.orm import Session
 
 from app.models.transaction_model import TransactionModel
 from app.schemas.ticket_schema import ShowTicket
-from app.schemas.transaction_schema import TransactionBase
 
 
 def calculate_amount(ticket: ShowTicket):

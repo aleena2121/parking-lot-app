@@ -15,7 +15,7 @@ from app.queries.user_queries import (get_all_users, get_user_by_email,
 from app.schemas.response_schema import StandardResponse
 from app.schemas.user_schema import CreateUser, ShowUser, UpdateUser
 from app.utils.hash_password import Hash
-from app.utils.role_checker import require_admin
+from app.utils.role_checker import require_role
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
 
@@ -24,7 +24,7 @@ user_router = APIRouter(prefix="/user", tags=["Users"])
 def create_user(
     request: CreateUser,
     db: Session = Depends(get_db),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     try:
         existing_email = get_user_by_email(db, request.email)
@@ -61,7 +61,9 @@ def create_user(
 
 @user_router.get("/{user_id}", response_model=StandardResponse[ShowUser])
 def get_by_id(
-    user_id: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     user = get_user_by_id(db, user_id)
     if not user:
@@ -77,7 +79,9 @@ def get_by_id(
 
 
 @user_router.get("/", response_model=StandardResponse[List[ShowUser]])
-def get_all(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+def get_all(
+    db: Session = Depends(get_db), current_user=Depends(require_role(RoleEnum.ADMIN))
+):
     users = get_all_users(db)
     func_logger.info(f"Retrieved {len(users)} users")
     return StandardResponse(
@@ -92,7 +96,7 @@ def update_user(
     user_id: str,
     request: UpdateUser,
     db: Session = Depends(get_db),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     try:
         user = get_user_by_id(db, user_id)
@@ -133,7 +137,9 @@ def update_user(
 
 @user_router.delete("/{user_id}", response_model=StandardResponse[None])
 def delete_user(
-    user_id: str, db: Session = Depends(get_db), current_user=Depends(require_admin)
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(RoleEnum.ADMIN)),
 ):
     try:
         user = get_user_by_id(db, user_id)

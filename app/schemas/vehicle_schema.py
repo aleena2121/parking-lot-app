@@ -1,5 +1,3 @@
-from typing import Literal, Optional
-
 from pydantic import BaseModel, ConfigDict
 
 from app.enums.driver_enum import DriverEnum
@@ -20,15 +18,3 @@ class VehicleBase(BaseModel):
 
 class ShowVehicle(VehicleBase):
     vehicle_id: str
-
-
-class Category(BaseModel):
-    driver_category: VehicleEnum
-    vehicle_category: DriverEnum
-
-
-class SearchVehicle(BaseModel):
-    lot_id: str
-    color: Optional[str]
-    make: Optional[str]
-    model: Optional[str]
